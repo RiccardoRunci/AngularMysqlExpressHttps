@@ -1,0 +1,57 @@
+Creo un certificato ssl autofirmato (firmato da me e non da una certification authority).
+
+Un certificato ssl autofirmato ha lo stesso livello di crittografia di un 
+certificato firmato da una certification authority, solamente che il browser
+visualizzerà un messaggio "pagina non sicura" (anche se c'è il certificato).
+
+Per creare il certificato ssl abbiamo bisogno del programma "openssl":
+https://www.openssl.org/source/gitrepo.html
+Per scaricare il programma c'è da fare un clone di github.
+Quindi apro gitbash, mi posiziono su una cartella a caso e faccio:
+ git clone git://git.openssl.org/openssl.git (se dò questo comando senza fare prima "mkdir openssl" è meglio, mi crea lui una cartella "openssl").
+
+aspetto che finisce di scaricare.
+Per windows c'è da impostare alcune cose(sempre da gitbash):
+$ cd openssl                        //vado nella cartella che mi ha creato gitclone
+$ git config core.autocrlf false    //Questo devo farlo perchè se no openssl mi cambia tutte le volte il fine riga da lf a crlf
+$ git config core.eol lf            //configuro la fine riga a lf (come vuole windows)
+$ git checkout .                    //Più o meno serve per tenere aggiornato il pacchetto openssl ?!?
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+Per generare il certificato ssl (cert.crt) e la chiave (cert.key),
+mi posiziono sulla cartella dove voglio crearli (in questo caso /Backend/CertificatoSSL)
+e (anche da gitbash) digito il comando:
+openssl req -newkey rsa:4096  -x509  -sha256  -days 3650  -nodes  -out cert.crt  -keyout cert.key
+
+openssl req = è il comando per creare effettivamente il certificato.
+-newkey rsa:4096 - Crea una nuova richiesta di certificato e chiave RSA a 4096 bit. Quello predefinito è 2048 bit.
+-x509 - Crea un certificato X.509.
+-sha256 - Utilizzare SHA a 265 bit (Secure Hash Algorithm).
+-days 3650- Il numero di giorni per cui certificare il certificato. 3650 è di 10 anni. Puoi usare qualsiasi numero intero positivo.
+-nodes - Crea una chiave senza passphrase.
+-out cert.crt - Specifica il nome file in cui scrivere il certificato appena creato. È possibile specificare qualsiasi nome di file.
+-keyout cert.key - Specifica il nome file in cui scrivere la chiave privata appena creata. È possibile specificare qualsiasi nome di file.
+
+gitbash chiederà alcune informazioni (email, stato,ecc..).
+
+infine se facciamo ls nella cartella in cui abbiamo creato il certificato vedremo che ci saranno due file.
+Uno .cert e uno .key.
+-------------------------------------------------------------------------------------------------------------------------------------
+Per creare un certificato autofirmato senza inserire le informazioni a mano (stato,email,ecc..) possiamo fare:
+
+openssl req -newkey rsa:4096 \
+            -x509 \
+            -sha256 \
+            -days 3650 \
+            -nodes \
+            -out example.crt \
+            -keyout example.key \
+            -subj "/C=SI/ST=Ljubljana/L=Ljubljana/O=Security/OU=IT Department/CN=www.example.com"
+
+I campi, indicati nella riga -subj sono elencati di seguito:
+    C= - Nome del paese. L'abbreviazione ISO di due lettere.
+    ST= - Nome dello stato o della provincia.
+    L= - Nome località. Il nome della città in cui ti trovi.
+    O= - Il nome completo della tua organizzazione.
+    OU= - Unità organizzativa.
+    CN= - Il nome di dominio completo.
+--------------------------------------------------------------------------------------------------------------------
